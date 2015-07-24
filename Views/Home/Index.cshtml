@@ -1,0 +1,79 @@
+﻿@{
+    ViewBag.Title = "Azure Search - Feature Search";
+}
+<script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.10.2.min.js"></script>
+<script type="text/javascript">
+
+    $(function () {
+        // Execute search if user clicks enter
+        $("#q").keyup(function (event) {
+            if (event.keyCode == 13) {
+                Search();
+            }
+        });
+    });
+
+    function Search(filter, channels) {
+        // We will post to the MVC controller and parse the full results on the client side
+        // You may wish to do additional pre-processing on the data before sending it back to the client
+        var q = $("#q").val();
+        var f = filter;
+        var c = [];
+
+        $.post('/home/search',
+        {
+            q: q, f:f, channels: c
+        },
+        function (data) {
+            //var searchResultsHTML = "<tr><td>FEATURE NAME</td><td>FEATURE CLASS</td>";
+            var searchResultsHTML = "<tr><td>Title</td><td>Content</td><td>Body</td><td>Date</td></tr>";
+            //searchResultsHTML += "<td>STATE ALPHA</td><td>COUNTY_NAME</td>";
+            //searchResultsHTML += "<td>Elevation (m)</td><td>Elevation (ft)</td><td>MAP NAME</td>";
+            //searchResultsHTML += "<td>DESCRIPTION</td><td>HISTORY</td><td>DATE CREATED</td>";
+            //searchResultsHTML += "<td>DATE EDITED</td></tr>";
+           
+            for (var i = 0; i < data.length; i++) {
+                searchResultsHTML += "<td>" + data[i].Document.Title + "</td>";
+                searchResultsHTML += "<td>" + data[i].Document.ContentAbstract + "</td>";
+                searchResultsHTML += "<td>" + data[i].Document.ContentBody + "</td>";
+                searchResultsHTML += "<td>" + parseJsonDate(data[i].Document.Date) + "</td></tr>";
+                //searchResultsHTML += "<td>" + data[i].Document.STATE_ALPHA + "</td>";
+                //searchResultsHTML += "<td>" + data[i].Document.COUNTY_NAME + "</td>";
+                //searchResultsHTML += "<td>" + data[i].Document.ELEV_IN_M + "</td>";
+                //searchResultsHTML += "<td>" + data[i].Document.ELEV_IN_FT + "</td>";
+                //searchResultsHTML += "<td>" + data[i].Document.MAP_NAME + "</td>";
+                //searchResultsHTML += "<td>" + data[i].Document.DESCRIPTION + "</td>";
+                //searchResultsHTML += "<td>" + data[i].Document.HISTORY + "</td>";
+                //searchResultsHTML += "<td>" + parseJsonDate(data[i].Document.DATE_CREATED) + "</td>";
+                //searchResultsHTML += "<td>" + parseJsonDate(data[i].Document.DATE_EDITED) + "</td></tr>";
+            }
+
+            $("#searchResults").html(searchResultsHTML);
+
+        });
+
+        function parseJsonDate(jsonDateString) {
+            if (jsonDateString != null)
+                return new Date(parseInt(jsonDateString.replace('/Date(', '')));
+            else
+                return "";
+        }
+    };
+
+</script>
+<h2>News Azure Search</h2>
+<div class="container">
+    <input type="button" onclick="Search('0', null)" value="Week"/>
+    <input type="button" onclick="Search('1', null)" value="Month" />
+    <input type="button" onclick="Search('2', null)" value="Year" />
+    <input type="button" onclick="Search('3', null)" value="Older"/>
+</div>
+<div class="container">
+    <input type="search" name="q" id="q" autocomplete="off" size="100" /> <button onclick="Search(null, null);">Search</button>
+</div>
+<br />
+<div class="container">
+    <div class="row">
+        <table id="searchResults" border="1"></table>
+    </div>
+</div>
